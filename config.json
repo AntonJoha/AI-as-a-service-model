@@ -1,0 +1,6 @@
+{
+	"hidden_size": 100,
+	"layers": 4,
+	"input": 50,
+	"output": 1
+}
