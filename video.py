@@ -1,6 +1,5 @@
 import cv2
 import torch
-from torch.serialization import safe_globals
 from config import get_config
 from argparse import Namespace
 import pandas as pd
@@ -33,14 +32,18 @@ def read_video(video, fps, score, resnet):
 
     while video.isOpened():
         print(t)
+        torch.cuda.empty_cache()
         ret, frame = video.read()
-        patches = shape_frame(frame)
 
-        x = [resnet.forward(torch.permute(p, (2,1,0)).unsqueeze(0).to(device)) for p in patches]
         if not ret:
             break
 
-        video_info.append((t, frame, score))
+        patches = shape_frame(frame)
+
+        x = [resnet.forward(torch.permute(p, (2,1,0)).unsqueeze(0).to(device)).cpu() for p in patches]
+        
+        x = [torch.Tensor.numpy(i) for i in x]
+        video_info.append((t, x, score))
         frame_count += 1
         t += 1 / fps
     video.release()

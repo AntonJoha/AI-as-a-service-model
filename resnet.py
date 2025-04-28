@@ -24,8 +24,9 @@ class Resnet():
             self.init_152()
 
     def forward(self, data: torch.Tensor)-> Any:
-        x = self.preprocess(data)
-        return self.resnet(x)
+        with torch.no_grad():
+            x = self.preprocess(data)
+            return self.resnet(x)
 
 
     def init_50(self):
