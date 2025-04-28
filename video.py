@@ -1,9 +1,12 @@
 import cv2
+from typing import Any, List
+from pandas.io.pytables import DataCol
 import torch
-from config import get_config
+import random
+from config import get_config, get_pickle, make_pickle
 from argparse import Namespace
 import pandas as pd
-from resnet import get_resnet
+from resnet import get_resnet, Resnet
 
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -56,12 +59,17 @@ def read_video(video, fps, score, resnet):
 
 
 
-class Video():
 
-    def __init__(self, args: Namespace)-> None:
+class Video(torch.utils.data.Dataset):
+
+    def __init__(self, args: Namespace, res:Resnet | None=None)-> None:
         self.config = get_config(args.video)
-        self.resnet = get_resnet(args)
-        self.resnet.resnet.to(device)
+        print(args.resnet)
+        if res is None:
+            self.resnet: Resnet = get_resnet(args)
+        else:
+            self.resnet: Resnet = res
+        self.resnet.to(device)
 
         if self.config["live"] == False:
             self.make_dataset()
@@ -69,22 +77,43 @@ class Video():
             Exception("Live video not supported yet")
 
 
+    def get_video(self, file: Any) -> pd.DataFrame:
+        to_return = get_pickle(file["file"])
+        if to_return is None:
+            cap: cv2.VideoCapture = cv2.VideoCapture(file["file"])
+            fps = cap.get(cv2.CAP_PROP_FPS)
+            to_return= read_video(cap, fps, file["score"], self.resnet)
+            make_pickle(file["file"], to_return)
+        return to_return
+
     def make_dataset(self)-> None:
         self.videos = get_config(self.config["videos"])["entries"]
 
+        self.data: List[pd.DataFrame] = []
         for file in self.videos:
-            cap: cv2.VideoCapture = cv2.VideoCapture(file["file"])
-            fps = cap.get(cv2.CAP_PROP_FPS)
-            dataframe = read_video(cap, fps, file["score"], self.resnet)
-            print(dataframe)
+            dataframe = self.get_video(file)
+
+            print(len(dataframe.iloc[0]["frame"]))
+            self.data.append(dataframe)
 
 
+    def __len__(self)-> int:
+        count = 0
+        for i in self.data:
+                count += len(i.index)
+        return count
+
+    def __getitem__(self, index: int)-> Any:
+        for i in self.data:
+            if index < len(i.index):
+                return i.iloc[index]["frame"][random.randint(0, len(i.iloc[index]["frame"])-1)], torch.scalar_tensor(i.iloc[index]["score"], dtype=torch.float32)
+            else:
+                index -= len(i.index)
+        raise IndexError("Index out of range")
 
 
-
-
-def get_video(args: Namespace) -> Video:
-    return Video(args)
+def get_video(args: Namespace, res:Resnet| None =None) -> Video:
+    return Video(args, res)
 
 
 
@@ -93,4 +122,12 @@ if __name__ == "__main__":
     args.video = "video.json"
     args.resnet = "resnet.json"
     video = get_video(args)
+
+
+    loader = torch.utils.data.DataLoader(video, batch_size=2, shuffle=False)
+
+    for i, data in enumerate(loader):
+        print("Hello: ", i, "Data", data[0], "Label", data[1])
+
+
     print(video)

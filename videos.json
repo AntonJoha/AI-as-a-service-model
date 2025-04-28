@@ -2,13 +2,13 @@
 {
 	"entries":[
 		{ 
-			"file": "480p15.mp4",
-			"score": 0
+			"file": "smallsmall.mp4",
+			"score": 0.0
 		},
 		{
 
-			"file": "1080p60.mp4",
-			"score": 1
+			"file": "small.mp4",
+			"score": 1.0
 		}
 	]
 }

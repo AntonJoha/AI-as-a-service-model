@@ -19,16 +19,17 @@ class Model(nn.Module):
 
     def make_network(self, config: Any) -> None:
         
-        self.first: nn.Linear = nn.Linear(config["input"],config["network"][0])
-        self.rnn: nn.LSTM = nn.LSTM(config["input"], config["hidden_size"], config["layers"])
-        self.last = nn.Linear = nn.Linear(config["hidden"],config["output"])
+        self.first: nn.Linear = nn.Linear(config["input"],config["input"])
+        self.rnn: nn.LSTM = nn.LSTM(config["input"], config["hidden_size"], config["layers"], batch_first=True)
+        self.last = nn.Linear = nn.Linear(config["hidden_size"],config["output"])
+        self.relu = nn.ReLU()
 
 
 
     def forward(self,data: torch.Tensor) -> Any:
-        x = nn.ReLU(self.first(data))
+        x = self.relu(self.first(data))
         x, (self.hn,self.cn) = self.rnn(x)
-        x = nn.ReLU(x)
+        x = self.relu(x)
         return self.last(x)
 
 
