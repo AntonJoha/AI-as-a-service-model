@@ -32,6 +32,17 @@ class Model(nn.Module):
         x = self.relu(x)
         return self.last(x)
 
+    def save_model(self, path: str) -> None:
+        torch.save(self.state_dict(), path)
+
+    def load_model(self, path: str) -> None:
+        self.load_state_dict(torch.load(path))
+        self.eval()
+        if torch.cuda.is_available():
+            self.cuda()
+        else:
+            self.cpu()
+
 
 def get_model(args: Namespace)-> Model:
     m = Model(args)

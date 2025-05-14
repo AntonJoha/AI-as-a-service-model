@@ -61,10 +61,10 @@ def read_video(video, fps, score, resnet):
 
 class Video(torch.utils.data.Dataset):
 
-    def __init__(self, args: Namespace, res:Resnet | None=None)-> None:
-        self.config = get_config(args.video)
-        if res is None:
-            self.resnet: Resnet = get_resnet(args)
+    def __init__(self, args: str, res:Resnet | str=None)-> None:
+        self.config = get_config(args)
+        if type(res) is str:
+            self.resnet: Resnet = get_resnet(res)
         else:
             self.resnet: Resnet = res
         self.resnet.to(device)
@@ -109,8 +109,8 @@ class Video(torch.utils.data.Dataset):
         raise IndexError("Index out of range")
 
 
-def get_video(args: Namespace, res:Resnet| None =None) -> Video:
-    return Video(args, res)
+def get_video(video: str, res:Resnet | str) -> Video:
+    return Video(video, res)
 
 
 

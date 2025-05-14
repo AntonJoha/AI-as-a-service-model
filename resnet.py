@@ -7,8 +7,8 @@ import torch
 
 class Resnet():
 
-    def __init__(self, args: Namespace) -> None:
-        self.config: Any = get_config(args.resnet)
+    def __init__(self, args: str) -> None:
+        self.config: Any = get_config(args)
 
         size = self.config["size"]
 
@@ -59,5 +59,5 @@ class Resnet():
         self.preprocess = torchvision.models.ResNet152_Weights.IMAGENET1K_V1.transforms()
 
 
-def get_resnet(args: Namespace) -> Resnet:
+def get_resnet(args: str) -> Resnet:
     return Resnet(args)

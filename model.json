@@ -2,5 +2,7 @@
 	"hidden_size": 100,
 	"layers": 4,
 	"input": 1000,
-	"output": 1
+	"output": 1,
+	"batch_size": 2,
+	"epochs": 100
 }
