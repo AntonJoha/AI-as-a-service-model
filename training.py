@@ -25,7 +25,7 @@ def get_parser()-> ArgumentParser:
 
 def get_dataset(args: Namespace, res)-> DataLoader:
     dataset: video.Video = video.get_video(args, res)
-    dataloader: DataLoader = DataLoader(dataset, batch_size=2, shuffle=True, num_workers=4)
+    dataloader: DataLoader = DataLoader(dataset, batch_size=2, shuffle=False, num_workers=4)
     return dataloader
 
 
@@ -54,7 +54,7 @@ if __name__ == "__main__":
         for i, data in enumerate(dataloader):
             a = model(data[0])
             a.squeeze_()
-            print(a)
+            print(a, data[-1])
             loss = criterion(a, data[-1][-1])
             loss.backward()
             adam.step()

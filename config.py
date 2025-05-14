@@ -19,6 +19,6 @@ def get_pickle(path:str)-> Any:
 
 
 def make_pickle(path:str, data: Any)-> None:
-    p = "pickle/" + path + ".pkl"
+    p = "pickle/" + path.split("/")[-1] + ".pkl"
     with open(p, "wb") as f:
         pickle.dump(data, f)

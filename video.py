@@ -34,7 +34,6 @@ def read_video(video, fps, score, resnet):
     video_info = []
 
     while video.isOpened():
-        print(t)
         torch.cuda.empty_cache()
         ret, frame = video.read()
 
@@ -64,7 +63,6 @@ class Video(torch.utils.data.Dataset):
 
     def __init__(self, args: Namespace, res:Resnet | None=None)-> None:
         self.config = get_config(args.video)
-        print(args.resnet)
         if res is None:
             self.resnet: Resnet = get_resnet(args)
         else:
@@ -93,7 +91,6 @@ class Video(torch.utils.data.Dataset):
         for file in self.videos:
             dataframe = self.get_video(file)
 
-            print(len(dataframe.iloc[0]["frame"]))
             self.data.append(dataframe)
 
 
@@ -106,7 +103,7 @@ class Video(torch.utils.data.Dataset):
     def __getitem__(self, index: int)-> Any:
         for i in self.data:
             if index < len(i.index):
-                return i.iloc[index]["frame"][random.randint(0, len(i.iloc[index]["frame"])-1)], torch.scalar_tensor(i.iloc[index]["score"], dtype=torch.float32)
+                return i.iloc[index]["frame"][random.randint(0, len(i.iloc[index]["frame"])-1)], torch.scalar_tensor(float(i.iloc[index]["score"]), dtype=torch.float32)
             else:
                 index -= len(i.index)
         raise IndexError("Index out of range")
