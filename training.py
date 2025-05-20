@@ -61,15 +61,14 @@ def train_model(args: Namespace)-> None:
     for _ in range(config["epochs"]):
         x = []
         y = []
-        for _, data in enumerate(dataloader):
+        for i, data in enumerate(dataloader):
             
-            if random.random() > 0.5:
-                continue
-
             
             x.append(data[0].squeeze())
             y.append(data[-1][-1])
+            print("HERE", i)
             if len(x) >= config["batch_size"]:
+                print("START")
                 
                 x = torch.stack(x,0)
                 y = torch.stack(y,0)
@@ -86,19 +85,19 @@ def train_model(args: Namespace)-> None:
                 x = []
                 y = []
 
-            if testloader is not None:
-                sum_loss = 0
-                count = 0
-                for _, testdata in enumerate(testloader):
-                    x_test = testdata[0].squeeze()
-                    y_test = testdata[-1][-1]
-                    a_test = model(x_test)
-                    a_test = a_test[-1,:]
-                    a_test.squeeze_()
-                    loss_test = criterion(a_test, y_test)
-                    sum_loss += loss_test.item()
-                    count += 1
-                print(f"Test Loss: {sum_loss/count}")
+        if testloader is not None:
+            sum_loss = 0
+            count = 0
+            for _, testdata in enumerate(testloader):
+                x_test = testdata[0].squeeze()
+                y_test = testdata[-1][-1]
+                a_test = model(x_test)
+                a_test = a_test[-1,:]
+                a_test.squeeze_()
+                loss_test = criterion(a_test, y_test)
+                sum_loss += loss_test.item()
+                count += 1
+            print(f"Test Loss: {sum_loss/count}")
 
 
 

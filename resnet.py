@@ -3,6 +3,30 @@ from argparse import Namespace
 from config import get_config
 from typing import Any
 import torch
+import torch.nn as nn
+
+class _resnet(torch.nn.Module):
+    """Modified ResNet50 for feature extraction"""
+    def __init__(self, model):
+        super(_resnet, self).__init__()
+        self.features = nn.Sequential(*list(model.children())[:-2])
+        for p in self.features.parameters():
+            p.requires_grad = False
+
+    def forward(self, x):
+
+        for ii, model in enumerate(self.features):
+            x = model(x)
+            if ii == 7:
+                features_mean = nn.functional.adaptive_avg_pool2d(x, 1)
+                features_std = global_std_pool2d(x)
+                return features_mean
+
+
+def global_std_pool2d(x):
+    """2D global standard variation pooling"""
+    return torch.std(x.view(x.size()[0], x.size()[1], -1, 1),
+                     dim=2, keepdim=True)
 
 
 class Resnet():
@@ -22,6 +46,8 @@ class Resnet():
             self.init_101()
         if size == 152:
             self.init_152()
+
+        self.resnet = _resnet(self.resnet)
 
     def to(self, device: torch.device) -> None:
         self.resnet.to(device)
