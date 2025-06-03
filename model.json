@@ -1,8 +1,8 @@
 {
-	"hidden_size": 100,
+	"hidden_size": 10,
 	"layers": 4,
-	"input": 1000,
+	"input": 4096,
 	"output": 1,
-	"batch_size": 2,
-	"epochs": 100
+	"batch_size": 10,
+	"epochs": 50
 }

@@ -18,9 +18,11 @@ class _resnet(torch.nn.Module):
         for ii, model in enumerate(self.features):
             x = model(x)
             if ii == 7:
-                features_mean = nn.functional.adaptive_avg_pool2d(x, 1)
-                features_std = global_std_pool2d(x)
-                return features_mean
+                features_mean = nn.functional.adaptive_avg_pool2d(x, 1).squeeze()
+                features_std = global_std_pool2d(x).squeeze()
+                a = torch.cat((features_mean, features_std),0).squeeze()
+                print(a.shape, features_mean.shape, features_std.shape)
+                return a
 
 
 def global_std_pool2d(x):

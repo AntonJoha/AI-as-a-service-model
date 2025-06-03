@@ -18,17 +18,29 @@ class Model(nn.Module):
         self.cn: None | torch.Tensor = None
 
     def make_network(self, config: Any) -> None:
-        
-        self.first: nn.Linear = nn.Linear(config["input"],config["input"])
-        self.rnn: nn.LSTM = nn.LSTM(config["input"], config["hidden_size"], config["layers"], batch_first=True)
-        self.last = nn.Linear = nn.Linear(config["hidden_size"],config["output"])
-        self.relu = nn.ReLU()
+        self.first: nn.Linear = nn.Linear(config["input"],int(config["input"]/2))
+        self.query: nn.Linear = nn.Linear(config["input"], int(config["input"]/2))
+        self.value: nn.Linear = nn.Linear(config["input"], int(config["input"]/2))
 
+        self.rnn: nn.LSTM = nn.LSTM(int(config["input"]/10), config["hidden_size"], config["layers"], batch_first=True)
+        self.attention = nn.MultiheadAttention(int(config["input"]/2), 16, batch_first=True)
+        self.last =  nn.Linear(int(config["input"]/2),config["output"])
+        self.relu = nn.ReLU()
+        self.hidden_size= config["hidden_size"]
+
+    def _get_initial_state(self, batch_size, device):
+        h0 = torch.zeros(1, batch_size, self.hidden_size, device=device)
+        return h0
 
 
     def forward(self,data: torch.Tensor) -> Any:
-        x = self.relu(self.first(data))
-        x, (self.hn,self.cn) = self.rnn(x)
+        key = self.first(data)
+        query = self.query(data)
+        value = self.value(data)
+        
+
+        x, _ = self.attention(query, key, value)
+
         x = self.relu(x)
         return self.last(x)
 
@@ -40,6 +52,8 @@ class Model(nn.Module):
         self.eval()
         if torch.cuda.is_available():
             self.cuda()
+            self.cpu()
+            print("USING CPU FIX LATER")
         else:
             self.cpu()
 
